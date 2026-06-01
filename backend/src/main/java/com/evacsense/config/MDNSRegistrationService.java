@@ -19,9 +19,34 @@ public class MDNSRegistrationService {
     @PostConstruct
     public void registerService() {
         try {
-            // Find the local IP address
-            InetAddress localHost = InetAddress.getLocalHost();
-            logger.info("Initializing mDNS on local host: {}", localHost.getHostAddress());
+            // Find the true local IP address by scanning network interfaces
+            InetAddress localHost = null;
+            java.util.Enumeration<java.net.NetworkInterface> interfaces = java.net.NetworkInterface.getNetworkInterfaces();
+            if (interfaces != null) {
+                while (interfaces.hasMoreElements()) {
+                    java.net.NetworkInterface networkInterface = interfaces.nextElement();
+                // Skip loopback, inactive, or virtual adapters
+                if (networkInterface.isLoopback() || !networkInterface.isUp() || networkInterface.isVirtual() || networkInterface.getName().contains("vboxnet") || networkInterface.getName().contains("wsl")) {
+                    continue;
+                }
+                java.util.Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    InetAddress addr = addresses.nextElement();
+                    // Get a valid Site-Local IPv4 address
+                    if (!addr.isLoopbackAddress() && addr.isSiteLocalAddress() && addr.getHostAddress().indexOf(":") == -1) {
+                        localHost = addr;
+                        break;
+                    }
+                }
+                if (localHost != null) break;
+            }
+        }
+        
+        if (localHost == null) {
+                localHost = InetAddress.getLocalHost(); // Fallback
+            }
+            
+            logger.info("Initializing mDNS on local host: {} (Interface scan)", localHost.getHostAddress());
 
             // Initialize JmDNS
             jmdns = JmDNS.create(localHost);
