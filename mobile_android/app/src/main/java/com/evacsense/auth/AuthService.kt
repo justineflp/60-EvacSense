@@ -41,6 +41,11 @@ interface AuthService {
         @Body request: PhotoRegistrationRequest
     ): Call<AuthResponse>
 
+    @GET("api/auth/photo-status")
+    fun getPhotoStatus(
+        @Header("Authorization") bearerToken: String
+    ): Call<PhotoStatusResponse>
+
     // Module 2: Classroom Presence Recording endpoints
     @POST("api/presence/scan")
     fun scanPresence(
@@ -88,6 +93,19 @@ interface AuthService {
         @Header("Authorization") bearerToken: String,
         @Body request: DistressRequest
     ): Call<DistressResponse>
+
+    // Module 5: Teacher Dashboard endpoints
+    @GET("api/teacher/roster")
+    fun getTeacherRoster(
+        @Header("Authorization") bearerToken: String,
+        @retrofit2.http.Query("teacherId") teacherId: String
+    ): Call<Map<String, Any>>
+
+    @POST("api/teacher/request-clearance")
+    fun requestClearance(
+        @Header("Authorization") bearerToken: String,
+        @Body request: Map<String, String>
+    ): Call<Map<String, Any>>
 }
 
 // Request Data Clump DTOs
@@ -131,6 +149,12 @@ data class StaffRegisterRequest(
 
 data class PhotoRegistrationRequest(
     val photoBase64: String
+)
+
+data class PhotoStatusResponse(
+    val status: String,
+    val hasPhoto: Boolean,
+    val photoBase64: String?
 )
 
 data class ActiveDrillResponse(

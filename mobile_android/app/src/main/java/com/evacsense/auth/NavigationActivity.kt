@@ -35,6 +35,7 @@ class NavigationActivity : AppCompatActivity() {
     
     // Default fallback room if no baseline localized room exists
     private var detectedOriginRoomId = "ROOM-101" 
+    private var detectedOriginRoomName = "CS Lab 1 (Room 401)"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,6 +58,7 @@ class NavigationActivity : AppCompatActivity() {
 
         // Read detected origin room extra if passed from dashboard auto-localization trigger
         detectedOriginRoomId = intent.getStringExtra("DETECTED_ROOM_ID") ?: "ROOM-101"
+        detectedOriginRoomName = intent.getStringExtra("DETECTED_ROOM_NAME") ?: "CS Lab 1 (Room 401)"
 
         // Start route loading
         loadRouteDirections()
@@ -105,8 +107,8 @@ class NavigationActivity : AppCompatActivity() {
     }
 
     private fun renderEvacuationRoute(route: EvacuationRouteDetails) {
-        routeTitleText.text = "Origin: ${route.origin} ➜ Exit: ${route.destination}"
-        routeMetricsText.text = "Est. Distance: ${route.totalDistance} meters | Floor Pathing: 4 ➜ 1"
+        routeTitleText.text = "Origin: $detectedOriginRoomName → Exit: ${route.destination}"
+        routeMetricsText.text = "Est. Distance: ${route.totalDistance} meters | Floor Pathing: 4 → 1"
 
         directionsContainer.removeAllViews()
 
@@ -144,7 +146,7 @@ class NavigationActivity : AppCompatActivity() {
 
     private fun handleDistressAlert() {
         // Send emergency signal (simulate distress sync)
-        Toast.makeText(this, "🚨 DISTRESS SENT! Coordinates registered. Safety team is responding.", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, "DISTRESS SENT! Coordinates registered. Safety team is responding.", Toast.LENGTH_LONG).show()
     }
 
     private fun isNetworkConnected(): Boolean {

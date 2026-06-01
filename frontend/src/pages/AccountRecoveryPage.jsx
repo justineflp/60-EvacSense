@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Key } from 'lucide-react';
 
 export default function AccountRecoveryPage({ navigate }) {
   const [email, setEmail] = useState('');
@@ -54,7 +55,7 @@ export default function AccountRecoveryPage({ navigate }) {
             justifyContent: 'center',
             fontSize: '1.5rem',
             color: 'var(--accent-gold)'
-          }}>🔑</div>
+          }}><Key size={32} /></div>
           <h1 className="brand-title" style={{ fontSize: '1.75rem' }}>Account Recovery</h1>
           <p className="brand-subtitle">Reset Secure Credentials</p>
         </div>

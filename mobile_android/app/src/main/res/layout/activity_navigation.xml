@@ -17,7 +17,7 @@
         android:textSize="18sp"
         android:gravity="center"
         android:padding="12dp"
-        android:text="🚨 EVACUATION ROUTING ACTIVE"
+        android:text="EVACUATION ROUTING ACTIVE"
         android:layout_marginBottom="12dp" />
 
     <!-- Offline Network Suspend Banner (hidden by default) -->
@@ -31,7 +31,7 @@
         android:textSize="14sp"
         android:gravity="center"
         android:padding="8dp"
-        android:text="⚠️ OFFLINE MODE: Network dropped. Showing cached route."
+        android:text="OFFLINE MODE: Network dropped. Showing cached route."
         android:visibility="gone"
         android:layout_marginBottom="12dp" />
 
@@ -105,7 +105,7 @@
         android:id="@+id/distressButton"
         android:layout_width="match_parent"
         android:layout_height="54dp"
-        android:text="🚨 TRIGGER DISTRESS ALERT"
+        android:text="TRIGGER DISTRESS ALERT"
         android:backgroundTint="#B91C1C"
         android:textColor="#FFFFFF"
         android:textStyle="bold"

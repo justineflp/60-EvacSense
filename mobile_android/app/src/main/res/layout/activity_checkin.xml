@@ -47,7 +47,7 @@
                 android:id="@+id/networkStateText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="🟢 ACTIVE — SYNCHRONIZED WITH CLOUD"
+                android:text="ACTIVE — SYNCHRONIZED WITH CLOUD"
                 android:textColor="#34D399"
                 android:textSize="11sp"
                 android:textStyle="bold" />
@@ -295,7 +295,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="🚨 EMERGENCY DISTRESS BEACON"
+                android:text="EMERGENCY DISTRESS BEACON"
                 android:textColor="#EF4444"
                 android:textSize="13sp"
                 android:textStyle="bold"

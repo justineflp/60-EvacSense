@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Shield, AlertTriangle, AlertCircle, Map as MapIcon, RefreshCw, Printer, Moon, PlayCircle, StopCircle, MapPin, BarChart2, ClipboardList, PartyPopper, Building, CheckCircle, CheckCircle2, Link, Download } from 'lucide-react';
 import { NGE_FLOOR_LAYOUTS, NGE_FLOOR_TITLES } from '../ngeFloorLayouts';
 
 export default function Dashboard({ user, token, onLogout }) {
@@ -655,7 +656,7 @@ export default function Dashboard({ user, token, onLogout }) {
                 justifyContent: 'center',
                 fontSize: '2rem',
                 color: 'var(--accent-gold)'
-              }}>🛡️</div>
+              }}><Shield size={24} /></div>
               
               <h2 style={{ fontFamily: 'Outfit', fontSize: '1.5rem', fontWeight: 700, color: '#ffffff', marginBottom: '0.35rem' }}>{user.name}</h2>
               <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.75rem' }}>{user.email}</span>
@@ -683,7 +684,7 @@ export default function Dashboard({ user, token, onLogout }) {
             <h3 style={{ fontFamily: 'Outfit', color: '#ffffff', fontSize: '1.25rem', marginBottom: '0.75rem' }}>Pre-Drill Presence Detection</h3>
             {activeDrill ? (
               <div style={{ background: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.15)', padding: '1.25rem', borderRadius: '12px', textAlign: 'left', animation: 'pulseGlow 2s infinite ease-in-out' }}>
-                <strong style={{ color: '#34d399', display: 'block', fontSize: '1.1rem', marginBottom: '0.5rem' }}>⚠️ DRILL SESSION IS ACTIVE!</strong>
+                <strong style={{ color: '#34d399', fontSize: '1.1rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><AlertTriangle size={20} /> DRILL SESSION IS ACTIVE!</strong>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1rem' }}>
                   A drill coordinator has activated **{activeDrill.name}**. Students and teachers must execute pre-drill localization now!
                 </p>
@@ -697,7 +698,7 @@ export default function Dashboard({ user, token, onLogout }) {
               </div>
             ) : (
               <div style={{ padding: '2rem', textAlign: 'center', background: 'rgba(255,255,255,0.01)', border: '1px dashed var(--border-glass)', borderRadius: '12px' }}>
-                <span style={{ fontSize: '1.75rem', display: 'block', marginBottom: '0.5rem' }}>💤</span>
+                <span style={{ fontSize: '1.75rem', display: 'block', marginBottom: '0.5rem', display: 'flex', justifyContent: 'center' }}><Moon size={28} /></span>
                 <strong style={{ color: '#ffffff', display: 'block' }}>No Active Drill Session</strong>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>Drill baselines and classroom triangulation scans will open when a safety officer triggers the drill.</p>
               </div>
@@ -725,7 +726,7 @@ export default function Dashboard({ user, token, onLogout }) {
                         style={{ width: 'auto', padding: '0.6rem 1.25rem', fontSize: '0.9rem' }}
                         disabled={loadingDrill}
                       >
-                        🚀 Initiate Earthquake Drill Run
+                        <PlayCircle size={18} style={{marginRight: '8px', verticalAlign: 'middle'}} /> Initiate Earthquake Drill Run
                       </button>
                     ) : (
                       <button 
@@ -734,7 +735,7 @@ export default function Dashboard({ user, token, onLogout }) {
                         style={{ width: 'auto', padding: '0.6rem 1.25rem', fontSize: '0.9rem', background: 'linear-gradient(135deg, #ef4444, #b91c1c)', color: '#ffffff', boxShadow: 'none' }}
                         disabled={loadingDrill}
                       >
-                        🛑 Conclude Active Drill Run
+                        <StopCircle size={18} style={{marginRight: '8px', verticalAlign: 'middle'}} /> Conclude Active Drill Run
                       </button>
                     )}
                   </div>
@@ -771,7 +772,7 @@ export default function Dashboard({ user, token, onLogout }) {
                     borderRadius: '12px',
                     animation: distressCount > 0 ? 'pulseGlow 1.5s infinite ease-in-out' : 'none'
                   }}>
-                    <span style={{ color: distressCount > 0 ? '#ef4444' : 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 600 }}>🚨 Distress Signals</span>
+                    <span style={{ color: distressCount > 0 ? '#ef4444' : 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}><AlertCircle size={14} /> Distress Signals</span>
                     <strong style={{ fontSize: '1.75rem', color: distressCount > 0 ? '#ef4444' : '#ffffff', display: 'block', marginTop: '0.25rem' }}>{distressCount} Active</strong>
                   </div>
                 </div>
@@ -789,7 +790,7 @@ export default function Dashboard({ user, token, onLogout }) {
                 animation: 'pulseGlow 1.5s infinite'
               }}>
                 <h3 style={{ fontFamily: 'Outfit', color: '#f87171', fontSize: '1.25rem', fontWeight: 700, margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  🚨 EMERGENCY DISTRESS ALERTS ACTIVE ({distressCount})
+                  <AlertCircle size={18} style={{marginRight: '8px', verticalAlign: 'middle'}} /> EMERGENCY DISTRESS ALERTS ACTIVE ({distressCount})
                 </h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
                   Immediate marshaling triage required at the locations listed below:
@@ -811,7 +812,7 @@ export default function Dashboard({ user, token, onLogout }) {
                           Role: {log.role} | Department: {log.department}
                         </span>
                         <span style={{ color: '#f87171', fontSize: '0.88rem', display: 'block', marginTop: '0.4rem', fontWeight: 600 }}>
-                          📍 Last Known Coordinates: {log.location}
+                          <MapPin size={16} style={{marginRight: '6px', verticalAlign: 'middle'}} /> Last Known Coordinates: {log.location}
                         </span>
                       </div>
                       <button
@@ -848,7 +849,7 @@ export default function Dashboard({ user, token, onLogout }) {
                 className={`btn ${activeTab === 'occupancy' ? 'btn-primary' : 'btn-secondary'}`}
                 style={{ width: 'auto', padding: '0.6rem 1.5rem', fontSize: '0.85rem' }}
               >
-                📊 Drill Attendance & Occupancy
+                <BarChart2 size={18} style={{marginRight: '8px', verticalAlign: 'middle'}} /> Drill Attendance & Occupancy
               </button>
               {user.role === 'Drill Coordinator' && (
                 <>
@@ -860,7 +861,7 @@ export default function Dashboard({ user, token, onLogout }) {
                     className={`btn ${activeTab === 'navigation' ? 'btn-primary' : 'btn-secondary'}`}
                     style={{ width: 'auto', padding: '0.6rem 1.5rem', fontSize: '0.85rem' }}
                   >
-                    🗺️ Evacuation Path Designer & Rerouting
+                    <MapIcon size={18} style={{marginRight: '8px', verticalAlign: 'middle'}} /> Evacuation Path Designer & Rerouting
                   </button>
                   <button
                     onClick={() => {
@@ -870,7 +871,7 @@ export default function Dashboard({ user, token, onLogout }) {
                     className={`btn ${activeTab === 'reports' ? 'btn-primary' : 'btn-secondary'}`}
                     style={{ width: 'auto', padding: '0.6rem 1.5rem', fontSize: '0.85rem' }}
                   >
-                    📋 Compliance Safety Reports
+                    <ClipboardList size={18} style={{marginRight: '8px', verticalAlign: 'middle'}} /> Compliance Safety Reports
                   </button>
                 </>
               )}
@@ -1005,6 +1006,7 @@ export default function Dashboard({ user, token, onLogout }) {
                             <th style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Full Name</th>
                             <th style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Department</th>
                             <th style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Classroom Origin</th>
+                            <th style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Current Status</th>
                             <th style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Safety Actions</th>
                           </tr>
                         </thead>
@@ -1017,20 +1019,25 @@ export default function Dashboard({ user, token, onLogout }) {
                               <td style={{ padding: '0.75rem 1rem', fontSize: '0.9rem', color: '#ffffff', fontWeight: 600 }}>{stu.name}</td>
                               <td style={{ padding: '0.75rem 1rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{stu.department}</td>
                               <td style={{ padding: '0.75rem 1rem', fontSize: '0.85rem', color: '#60a5fa' }}>{stu.originRoom}</td>
+                              <td style={{ padding: '0.75rem 1rem', fontSize: '0.85rem', color: stu.status === 'Pending Marshal Clearance' ? '#fbbf24' : (stu.status === 'Verification Failed' ? '#ef4444' : 'var(--text-secondary)') }}>
+                                {stu.status || 'Absent'}
+                              </td>
                               <td style={{ padding: '0.75rem 1rem' }}>
-                                <button
-                                  onClick={() => handleMarshalClear(stu.userId)}
-                                  className="btn btn-primary"
-                                  style={{
-                                    width: 'auto',
-                                    padding: '0.35rem 0.75rem',
-                                    fontSize: '0.75rem',
-                                    background: 'linear-gradient(135deg, #10b981, #059669)',
-                                    boxShadow: 'none'
-                                  }}
-                                >
-                                  Marshal Clear
-                                </button>
+                                {stu.status === 'Pending Marshal Clearance' && (
+                                  <button
+                                    onClick={() => handleMarshalClear(stu.userId)}
+                                    className="btn btn-primary"
+                                    style={{
+                                      width: 'auto',
+                                      padding: '0.35rem 0.75rem',
+                                      fontSize: '0.75rem',
+                                      background: 'linear-gradient(135deg, #10b981, #059669)',
+                                      boxShadow: 'none'
+                                    }}
+                                  >
+                                    Marshal Clear
+                                  </button>
+                                )}
                               </td>
                             </tr>
                           ))}
@@ -1101,14 +1108,15 @@ export default function Dashboard({ user, token, onLogout }) {
 
                     {pendingRequests.length === 0 ? (
                       <div style={{
-                        padding: '2.5rem',
+                        padding: '4rem 2rem',
                         textAlign: 'center',
-                        background: 'rgba(255,255,255,0.01)',
+                        background: 'rgba(255,255,255,0.02)',
                         borderRadius: '12px',
                         border: '1px dashed var(--border-glass)'
                       }}>
-                        <span style={{ fontSize: '1.75rem', display: 'block', marginBottom: '0.5rem' }}>🎉</span>
-                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No pending requests.</p>
+                        <CheckCircle size={48} color="#34d399" style={{ marginBottom: '1rem', opacity: 0.8 }} />
+                        <h4 style={{ color: '#ffffff', fontSize: '1.25rem', fontWeight: 600, margin: 0 }}>All Caught Up!</h4>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.5rem' }}>There are no pending staff registration requests to review at this time.</p>
                       </div>
                     ) : (
                       <div style={{ overflowX: 'auto' }}>
@@ -1221,7 +1229,7 @@ export default function Dashboard({ user, token, onLogout }) {
                   {/* Visual Map Canvas */}
                   <div>
                     <h4 style={{ fontFamily: 'Outfit', color: '#ffffff', fontSize: '1.25rem', marginBottom: '0.25rem', textAlign: 'left' }}>
-                      🏢 NGE Building — Evacuation Route Map
+                      <Building size={20} style={{marginRight: '8px', verticalAlign: 'middle'}} /> NGE Building — Evacuation Route Map
                     </h4>
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '1rem', textAlign: 'left' }}>
                       Dr. Nicolas G. Escario Sr. Building • CIT-U Campus (B1)
@@ -1243,7 +1251,7 @@ export default function Dashboard({ user, token, onLogout }) {
 
                     <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '1.25rem', textAlign: 'left' }}>
                       <strong style={{ color: 'rgba(255,255,255,0.6)' }}>{NGE_FLOOR_TITLES[selectedFloor]}</strong> — 
-                      <strong style={{ color: '#fbbf24' }}> Click a node to test Dijkstra pathing.</strong>
+                      <strong style={{ color: '#fbbf24' }}> Click a node to test evacuation routing.</strong>
                       <strong style={{ color: '#ef4444' }}> Click a connection to toggle blockage.</strong>
                     </p>
 
@@ -1361,9 +1369,9 @@ export default function Dashboard({ user, token, onLogout }) {
 
                     {/* Test Path Results and Instructions */}
                     <div style={{ marginTop: '2rem', textAlign: 'left' }}>
-                      <h5 style={{ fontFamily: 'Outfit', color: '#ffffff', fontSize: '1.1rem', marginBottom: '0.75rem' }}>
-                        Dijkstra Pathfinding Simulation Output
-                      </h5>
+                      <h4 style={{ fontFamily: 'Outfit', color: '#ffffff', fontSize: '1.2rem', marginBottom: '0.75rem', marginTop: '2rem' }}>
+                        {selectedOrigin ? `${NGE_FLOOR_LAYOUTS[selectedFloor]?.[selectedOrigin]?.label || selectedOrigin} Pathfinding Simulation Output` : 'Pathfinding Simulation Output'}
+                      </h4>
                       {selectedOrigin ? (
                         <div style={{
                           padding: '1.25rem',
@@ -1372,16 +1380,16 @@ export default function Dashboard({ user, token, onLogout }) {
                           borderRadius: '12px'
                         }}>
                           <div style={{ marginBottom: '1rem' }}>
-                            <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Origin Location:</span>
-                            <strong style={{ color: 'var(--accent-gold)', marginLeft: '0.5rem' }}>{selectedOrigin}</strong>
+                            <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', display: 'block', marginBottom: '0.25rem' }}>Simulation Origin Node</span>
+                            <strong style={{ color: '#ffffff', fontSize: '1.1rem' }}>{NGE_FLOOR_LAYOUTS[selectedFloor]?.[selectedOrigin]?.label || selectedOrigin}</strong>
                           </div>
 
                           {errorPath ? (
-                            <div style={{ color: '#ef4444', fontWeight: 600, fontSize: '0.9rem' }}>⚠️ {errorPath}</div>
+                            <div style={{ color: '#ef4444', fontWeight: 600, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}><AlertTriangle size={16} /> {errorPath}</div>
                           ) : (
                             <div>
                               <p style={{ color: '#34d399', fontWeight: 600, fontSize: '0.95rem', marginBottom: '0.75rem' }}>
-                                ✔ Dijkstra shortest evacuation route successfully computed.
+                                <CheckCircle2 size={16} style={{marginRight: '6px', verticalAlign: 'middle'}} /> Shortest evacuation route successfully computed.
                               </p>
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                                 {testInstructions.map((inst, index) => (
@@ -1511,7 +1519,7 @@ export default function Dashboard({ user, token, onLogout }) {
                         </div>
 
                         <button type="submit" className="btn btn-primary" style={{ padding: '0.5rem', fontSize: '0.8rem', marginTop: '0.5rem' }}>
-                          🔗 Bind Connection Link
+                          <Link size={18} style={{marginRight: '8px', verticalAlign: 'middle'}} /> Bind Connection Link
                         </button>
                       </div>
                     </form>
@@ -1540,7 +1548,7 @@ export default function Dashboard({ user, token, onLogout }) {
                       className="btn btn-secondary"
                       style={{ width: '100%', fontSize: '0.8rem', marginBottom: '1.5rem', border: '1px dashed rgba(255,255,255,0.2)' }}
                     >
-                      🔄 Sync Completed Drills
+                      <RefreshCw size={18} style={{marginRight: '8px', verticalAlign: 'middle'}} /> Sync Completed Drills
                     </button>
                     
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '350px', overflowY: 'auto' }}>
@@ -1686,14 +1694,14 @@ export default function Dashboard({ user, token, onLogout }) {
                             className="btn btn-secondary"
                             style={{ width: 'auto', padding: '0.6rem 1.25rem', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
                           >
-                            📥 Download Data Matrix (CSV)
+                            <Download size={18} style={{marginRight: '8px', verticalAlign: 'middle'}} /> Download Data Matrix (CSV)
                           </a>
                           <button
                             onClick={() => window.print()}
                             className="btn btn-primary"
                             style={{ width: 'auto', padding: '0.6rem 1.25rem', fontSize: '0.82rem' }}
                           >
-                            🖨️ Print Safety Certificate (PDF)
+                            <Printer size={18} style={{marginRight: '8px', verticalAlign: 'middle'}} /> Print Safety Certificate (PDF)
                           </button>
                         </div>
                       </div>
@@ -1711,7 +1719,7 @@ export default function Dashboard({ user, token, onLogout }) {
                         background: 'rgba(255,255,255,0.01)',
                         color: 'var(--text-muted)'
                       }}>
-                        <span style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>📋</span>
+                        <span style={{ fontSize: '2.5rem', marginBottom: '0.75rem', display: 'flex', justifyContent: 'center' }}><ClipboardList size={40} /></span>
                         <strong style={{ color: '#ffffff' }}>No Compliance Report Selected</strong>
                         <p style={{ fontSize: '0.82rem', marginTop: '0.25rem' }}>Select a finished drill session on the left to compile safety recommendations and clear certificates.</p>
                       </div>

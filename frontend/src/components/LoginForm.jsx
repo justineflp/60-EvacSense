@@ -119,7 +119,7 @@ export default function LoginForm({ onSubmit, loading, errorMessage }) {
         disabled={loading}
         style={{ marginTop: '0.5rem' }}
       >
-        {loading ? 'Authenticating Secure Session...' : 'Authenticate Securely'}
+        {loading ? 'Logging In...' : 'Log In'}
       </button>
     </form>
   );

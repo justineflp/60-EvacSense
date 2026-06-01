@@ -15,6 +15,7 @@
     <!-- Camera permissions for facial verification -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.front" android:required="false" />
 
     <application
         android:allowBackup="true"
@@ -36,6 +37,11 @@
         <!-- Secure Dashboard View Activity -->
         <activity
             android:name=".DashboardActivity"
+            android:exported="false" />
+
+        <!-- Teacher Dashboard View Activity -->
+        <activity
+            android:name=".TeacherDashboardActivity"
             android:exported="false" />
 
         <!-- Self-Registration View Activity -->

@@ -10,5 +10,6 @@ data class User(
     @SerializedName("name") val name: String,
     @SerializedName("email") val email: String,
     @SerializedName("role") val role: String,
-    @SerializedName("department") val department: String?
+    @SerializedName("department") val department: String?,
+    @SerializedName("hasPhoto") val hasPhoto: Boolean?
 )

@@ -653,4 +653,23 @@ public class AuthController {
 
         return ResponseEntity.ok(response);
     }
+
+    // 15. Check if student has a registered baseline photo
+    @RequireRole("Student")
+    @GetMapping("/auth/photo-status")
+    public ResponseEntity<Map<String, Object>> getPhotoStatus(HttpServletRequest request) {
+        User student = (User) request.getAttribute("currentUser");
+
+        boolean hasPhoto = student.getPhotoBase64() != null && !student.getPhotoBase64().trim().isEmpty();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "success");
+        response.put("hasPhoto", hasPhoto);
+        if (hasPhoto) {
+            response.put("photoBase64", student.getPhotoBase64());
+        }
+        response.put("errors", Collections.emptyList());
+
+        return ResponseEntity.ok(response);
+    }
 }

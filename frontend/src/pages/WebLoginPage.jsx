@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import LoginForm from '../components/LoginForm';
+import { Zap } from 'lucide-react';
 
 export default function WebLoginPage({ onLoginSuccess, navigate }) {
   const [view, setView] = useState('login'); // login | register | sso_select
@@ -28,6 +29,10 @@ export default function WebLoginPage({ onLoginSuccess, navigate }) {
       const data = await response.json();
       
       if (response.ok && data.status === 'success') {
+        if (data.user.role === 'Student') {
+          setError('Access Denied: Student accounts must use the EvacSense Mobile App.');
+          return;
+        }
         onLoginSuccess(data.session.token, data.user);
       } else {
         setError(data.message || data.errors?.[0] || 'Authentication failed.');
@@ -129,7 +134,7 @@ export default function WebLoginPage({ onLoginSuccess, navigate }) {
             color: '#ffffff',
             boxShadow: '0 8px 24px rgba(153, 27, 27, 0.35)',
             fontFamily: 'Outfit'
-          }}>⚡️</div>
+          }}><Zap size={32} /></div>
           <h1 className="brand-title" style={{ fontSize: '2rem' }}>EvacSense</h1>
           <p className="brand-subtitle" style={{ fontSize: '0.75rem' }}>CIT-U Earthquake Drill Suite</p>
         </div>

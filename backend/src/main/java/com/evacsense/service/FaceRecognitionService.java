@@ -32,14 +32,11 @@ public class FaceRecognitionService {
         }
     }
 
-    @org.springframework.beans.factory.annotation.Value("${rapidapi.key:b1d590e0e9msh474429247598414p196a7bjsn5ff8ffce118f}")
-    private String rapidApiKey;
+    @org.springframework.beans.factory.annotation.Value("${mxface.api.key:Y7y4ZGKXXyoBrYotfI-zclVIeFRvy5399}")
+    private String mxFaceApiKey;
 
-    @org.springframework.beans.factory.annotation.Value("${rapidapi.host:face-comparison1.p.rapidapi.com}")
-    private String rapidApiHost;
-
-    @org.springframework.beans.factory.annotation.Value("${rapidapi.url:https://face-comparison1.p.rapidapi.com/face_comparison}")
-    private String rapidApiUrl;
+    @org.springframework.beans.factory.annotation.Value("${mxface.api.url:https://faceapi.mxface.ai/api/v3/face/verify}")
+    private String mxFaceApiUrl;
 
     public FaceVerifyResult verifyFace(String userId, String livePhotoBase64) {
         int attempts = retryAttemptsStore.getOrDefault(userId, 0);
@@ -75,73 +72,85 @@ public class FaceRecognitionService {
             org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
             org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
             headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
-            headers.set("subscriptionkey", "API_KEY");
+            headers.set("Subscriptionkey", mxFaceApiKey);
 
-            Map<String, String> payload = new java.util.HashMap<>();
-            payload.put("encoded_image1", storedPhotoBase64);
-            payload.put("encoded_image2", livePhotoBase64);
+            // Create JSON payload matching MxFace documentation
+            Map<String, String> payloadMap = new java.util.HashMap<>();
+            payloadMap.put("encoded_image1", storedPhotoBase64);
+            payloadMap.put("encoded_image2", livePhotoBase64);
 
-            org.springframework.http.HttpEntity<Map<String, String>> request = new org.springframework.http.HttpEntity<>(
-                    payload, headers);
+            org.springframework.http.HttpEntity<Map<String, String>> request = new org.springframework.http.HttpEntity<>(payloadMap, headers);
 
-            String mxFaceUrl = "https://faceapi.mxface.ai/api/v3/face/verify";
-            org.springframework.http.ResponseEntity<Map> response = restTemplate.postForEntity(mxFaceUrl, request,
-                    Map.class);
-            Map<String, Object> body = response.getBody();
-
-            System.out.println("=== MXFACE RAW RESPONSE ===");
-            System.out.println(body);
-            System.out.println("===========================");
-
-            if (response.getStatusCode().is2xxSuccessful() && body != null) {
-                boolean verified = false;
-                float confidence = 0.0f;
-
-                if (body.containsKey("matchResult")) {
-                    verified = body.get("matchResult").toString().equals("1")
-                            || body.get("matchResult").toString().equals("true");
-                }
-
-                if (body.containsKey("matchedFaces")) {
-                    java.util.List<Map<String, Object>> matched = (java.util.List<Map<String, Object>>) body
-                            .get("matchedFaces");
-                    if (!matched.isEmpty() && matched.get(0).containsKey("confidence")) {
-                        confidence = Float.parseFloat(matched.get(0).get("confidence").toString());
-                        if (confidence <= 1.0f && confidence > 0) {
-                            confidence *= 100.0f;
+            org.springframework.http.ResponseEntity<Map> apiResponse = restTemplate.postForEntity(mxFaceApiUrl, request, Map.class);
+            Map<String, Object> responseBody = apiResponse.getBody();
+            
+            if (responseBody != null && responseBody.containsKey("matchedFaces")) {
+                java.util.List<Map<String, Object>> matchedFaces = (java.util.List<Map<String, Object>>) responseBody.get("matchedFaces");
+                if (matchedFaces != null && !matchedFaces.isEmpty()) {
+                    Map<String, Object> bestMatch = matchedFaces.get(0);
+                    Object matchResultObj = bestMatch.get("matchResult");
+                    Integer matchResult = (matchResultObj instanceof Integer) ? (Integer) matchResultObj : Integer.parseInt(matchResultObj.toString());
+                    Double apiConfidence = (bestMatch.get("confidence") instanceof Double) ? (Double) bestMatch.get("confidence") : Double.parseDouble(bestMatch.get("confidence").toString());
+                    
+                    boolean isMatch = false;
+                    if (matchResult != null && matchResult == 1) {
+                        isMatch = true;
+                    } else if (apiConfidence != null) {
+                        if (apiConfidence <= 1.0 && apiConfidence >= 0.60) {
+                            isMatch = true;
+                        } else if (apiConfidence > 1.0 && apiConfidence >= 60.0) {
+                            isMatch = true;
                         }
                     }
-                } else if (body.containsKey("confidence")) {
-                    confidence = Float.parseFloat(body.get("confidence").toString());
-                }
-
-                confidence = Math.round(confidence * 100.0f) / 100.0f;
-
-                // Fallback to our threshold if matchResult isn't 1 but confidence is high
-                if (verified || confidence >= 70.0f) {
-                    retryAttemptsStore.remove(userId);
-                    return new FaceVerifyResult(true, confidence, 3,
-                            "Facial biometric verified successfully.");
+                    
+                    if (isMatch) {
+                        float finalConfidence = apiConfidence != null ? apiConfidence.floatValue() : 0.95f;
+                        if (finalConfidence <= 1.0f) {
+                            finalConfidence *= 100.0f; // Convert 0.99 to 99.0
+                        }
+                        retryAttemptsStore.remove(userId);
+                        return new FaceVerifyResult(true, finalConfidence, 3, "Facial Verification Successful!");
+                    } else {
+                        attempts += 1;
+                        retryAttemptsStore.put(userId, attempts);
+                        return new FaceVerifyResult(false, 0.0f, Math.max(0, 3 - attempts), "Face did not match registered photo (Confidence too low). Please try again.");
+                    }
                 } else {
                     attempts += 1;
                     retryAttemptsStore.put(userId, attempts);
-                    return new FaceVerifyResult(false, confidence, Math.max(0, 3 - attempts),
-                            attempts >= 3 ? "Verification failed 3 times. Locked out. (Score: " + confidence + "%)"
-                                    : "Face does not match registered photo (Score: " + confidence
-                                            + "%). Try better lighting.");
+                    return new FaceVerifyResult(false, 0.0f, Math.max(0, 3 - attempts), "No faces detected in the photo. Please ensure good lighting and try again.");
                 }
             } else {
-                return new FaceVerifyResult(false, 0.0f, 3, "API returned an unexpected response.");
+                attempts += 1;
+                retryAttemptsStore.put(userId, attempts);
+                return new FaceVerifyResult(false, 0.0f, Math.max(0, 3 - attempts), "Facial verification failed: No clear face detected or lighting is too dark. Please try again.");
             }
         } catch (org.springframework.web.client.HttpClientErrorException e) {
             System.err.println("=== MXFACE HTTP ERROR ===");
-            System.err.println(e.getResponseBodyAsString());
+            String errorBody = e.getResponseBodyAsString();
+            System.err.println(errorBody);
             System.err.println("=========================");
-            return new FaceVerifyResult(false, 0.0f, 3,
-                    "API Error: " + e.getMessage());
+            
+            attempts += 1;
+            retryAttemptsStore.put(userId, attempts);
+
+            String errorMessage = "Facial recognition error. Please try again.";
+            try {
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                Map<String, Object> errorMap = mapper.readValue(errorBody, Map.class);
+                if (errorMap.containsKey("errorMessage")) {
+                    errorMessage = (String) errorMap.get("errorMessage");
+                } else if (errorMap.containsKey("error")) {
+                    errorMessage = (String) errorMap.get("error");
+                }
+            } catch (Exception ex) {}
+
+            return new FaceVerifyResult(false, 0.0f, Math.max(0, 3 - attempts), errorMessage);
         } catch (Exception e) {
             e.printStackTrace();
-            return new FaceVerifyResult(false, 0.0f, 3, "Failed to connect to MxFace API: " + e.getMessage());
+            attempts += 1;
+            retryAttemptsStore.put(userId, attempts);
+            return new FaceVerifyResult(false, 0.0f, Math.max(0, 3 - attempts), "Failed to connect to MxFace API: " + e.getMessage());
         }
     }
 

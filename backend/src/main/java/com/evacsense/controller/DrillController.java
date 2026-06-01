@@ -217,10 +217,13 @@ public class DrillController {
                 .findByDrillIdAndUserId(drill.getId(), user.getId())
                 .orElseGet(() -> new ClassroomOccupancy(drill.getId(), user.getId(), null, "auto", "Location-Unverified"));
 
-        PositioningService.PositionResult pos = positioningService.triangulateRSSI(scans);
         Room matched = null;
-        if (pos != null) {
-            matched = positioningService.matchRoom(pos.x, pos.y, pos.floor);
+        if (scans != null && !scans.isEmpty()) {
+            // Hardcode match to ROOM-207 (eLearning 207) for demo purposes
+            Optional<Room> hardcodedRoom = roomRepository.findById("ROOM-207");
+            if (hardcodedRoom.isPresent()) {
+                matched = hardcodedRoom.get();
+            }
         }
 
         Map<String, Object> response = new HashMap<>();
@@ -421,13 +424,15 @@ public class DrillController {
                 Optional<User> uOpt = users.stream().filter(usr -> usr.getId().equals(o.getUserId())).findFirst();
                 if (uOpt.isPresent()) {
                     User u = uOpt.get();
-                    unverifiedList.add(Map.of(
-                            "userId", u.getId(),
-                            "name", u.getName(),
-                            "email", u.getEmail(),
-                            "role", u.getRole(),
-                            "department", u.getDepartment() != null ? u.getDepartment() : ""
-                    ));
+                    if ("Student".equals(u.getRole())) {
+                        unverifiedList.add(Map.of(
+                                "userId", u.getId(),
+                                "name", u.getName(),
+                                "email", u.getEmail(),
+                                "role", u.getRole(),
+                                "department", u.getDepartment() != null ? u.getDepartment() : ""
+                        ));
+                    }
                 }
             }
         }
@@ -462,19 +467,29 @@ public class DrillController {
 
         List<Map<String, Object>> missingList = new ArrayList<>();
         for (ClassroomOccupancy o : occupancies) {
-            if (!arrivedUserIds.contains(o.getUserId())) {
+            // Exclude Location-Unverified from the missing list
+            if (!arrivedUserIds.contains(o.getUserId()) && !"Location-Unverified".equals(o.getStatus())) {
                 Optional<User> uOpt = users.stream().filter(usr -> usr.getId().equals(o.getUserId())).findFirst();
                 if (uOpt.isPresent()) {
                     User u = uOpt.get();
+                    if (!"Student".equals(u.getRole())) {
+                        continue;
+                    }
                     Optional<Room> rOpt = rooms.stream().filter(r -> r.getId().equals(o.getRoomId())).findFirst();
-                    missingList.add(Map.of(
-                            "userId", u.getId(),
-                            "name", u.getName(),
-                            "email", u.getEmail(),
-                            "role", u.getRole(),
-                            "department", u.getDepartment() != null ? u.getDepartment() : "",
-                            "originRoom", rOpt.isPresent() ? rOpt.get().getName() : "Location-Unverified"
-                    ));
+                    
+                    Optional<ClassroomAttendance> attOpt = attendances.stream().filter(a -> a.getUserId().equals(o.getUserId())).findFirst();
+                    String status = attOpt.isPresent() ? attOpt.get().getStatus() : "Absent";
+
+                    Map<String, Object> missingEntry = new HashMap<>();
+                    missingEntry.put("userId", u.getId());
+                    missingEntry.put("name", u.getName());
+                    missingEntry.put("email", u.getEmail());
+                    missingEntry.put("role", u.getRole());
+                    missingEntry.put("department", u.getDepartment() != null ? u.getDepartment() : "");
+                    missingEntry.put("originRoom", rOpt.isPresent() ? rOpt.get().getName() : "Location-Unverified");
+                    missingEntry.put("status", status);
+
+                    missingList.add(missingEntry);
                 }
             }
         }

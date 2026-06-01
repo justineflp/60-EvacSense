@@ -26,7 +26,6 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var loadingProgress: ProgressBar
     
     private lateinit var goToRegisterButton: TextView
-    private lateinit var configServerUrlButton: TextView
 
     private lateinit var authService: AuthService
     private var networkDiscoveryManager: NetworkDiscoveryManager? = null
@@ -46,7 +45,6 @@ class LoginActivity : AppCompatActivity() {
         errorText = findViewById(R.id.errorText)
         loadingProgress = findViewById(R.id.loadingProgress)
         goToRegisterButton = findViewById(R.id.goToRegisterButton)
-        configServerUrlButton = findViewById(R.id.configServerUrlButton)
 
         passwordToggle.setOnClickListener {
             isPasswordVisible = !isPasswordVisible
@@ -63,8 +61,7 @@ class LoginActivity : AppCompatActivity() {
         // Initialize dynamic API Service
         authService = ApiClient.getService(this)
 
-        // Start auto-discovery for local backend IP
-        configServerUrlButton.text = "📡 Scanning for local server...\n(Ensure backend is running)"
+        // Start auto-discovery for local Wi-Fi EvacSense Hub
         networkDiscoveryManager = NetworkDiscoveryManager(
             context = this,
             onServiceFound = { serverUrl ->
@@ -73,13 +70,12 @@ class LoginActivity : AppCompatActivity() {
                     sharedPref.edit().putString("server_url", serverUrl).apply()
                     ApiClient.reset()
                     authService = ApiClient.getService(this)
-                    configServerUrlButton.text = "✅ Auto-connected to: $serverUrl\n(Tap to configure manually)"
-                    Toast.makeText(this, "Local backend auto-discovered!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "EvacSense Wi-Fi Detected!", Toast.LENGTH_SHORT).show()
                 }
             },
             onServiceLost = {
                 runOnUiThread {
-                    configServerUrlButton.text = "⚠️ Connection to local server lost\n(Tap to configure manually)"
+                    // Toast.makeText(this, "Connection to Wi-Fi Hub lost", Toast.LENGTH_SHORT).show()
                 }
             }
         )
@@ -101,8 +97,7 @@ class LoginActivity : AppCompatActivity() {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
 
-        // Configure Server URL click
-        configServerUrlButton.setOnClickListener { showServerUrlConfigDialog() }
+
     }
 
     private fun checkExistingSession() {
@@ -118,7 +113,11 @@ class LoginActivity : AppCompatActivity() {
                     if (response.isSuccessful && response.body()?.status == "success") {
                         val user = response.body()?.user
                         if (user != null) {
-                            navigateToDashboard(user)
+                            if (user.role != "Student" && user.role != "Teacher") {
+                                sharedPref.edit().remove("auth_token").apply()
+                            } else {
+                                navigateToDashboard(user)
+                            }
                         }
                     } else {
                         // Clear invalid local token
@@ -164,6 +163,10 @@ class LoginActivity : AppCompatActivity() {
                     val token = body.session?.token
                     val user = body.user
                     if (token != null && user != null) {
+                        if (user.role != "Student" && user.role != "Teacher") {
+                            showError("Access Denied: ${user.role} accounts must use the EvacSense Web Dashboard.")
+                            return
+                        }
                         saveSession(token, user)
                         navigateToDashboard(user)
                     }
@@ -221,12 +224,17 @@ class LoginActivity : AppCompatActivity() {
             putString("user_email", user.email)
             putString("user_role", user.role)
             putString("user_dept", user.department)
+            putBoolean("has_photo", user.hasPhoto ?: false)
             apply()
         }
     }
 
     private fun navigateToDashboard(user: User) {
-        val intent = Intent(this, DashboardActivity::class.java).apply {
+        val intent = if (user.role == "Teacher") {
+            Intent(this, TeacherDashboardActivity::class.java)
+        } else {
+            Intent(this, DashboardActivity::class.java)
+        }.apply {
             putExtra("USER_NAME", user.name)
             putExtra("USER_ROLE", user.role)
             putExtra("USER_EMAIL", user.email)
@@ -245,43 +253,7 @@ class LoginActivity : AppCompatActivity() {
         loginButton.isEnabled = !isLoading
     }
 
-    private fun updateServerUrlButtonText() {
-        val sharedPref = getSharedPreferences("evacsense_prefs", Context.MODE_PRIVATE)
-        val serverUrl = sharedPref.getString("server_url", AuthService.BASE_URL) ?: AuthService.BASE_URL
-        configServerUrlButton.text = "⚙️ Configure API Server URL\n(Current: $serverUrl)"
-    }
 
-    private fun showServerUrlConfigDialog() {
-        val sharedPref = getSharedPreferences("evacsense_prefs", Context.MODE_PRIVATE)
-        val currentUrl = sharedPref.getString("server_url", AuthService.BASE_URL) ?: AuthService.BASE_URL
-
-        val input = EditText(this).apply {
-            setText(currentUrl)
-            setSelection(currentUrl.length)
-            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_URI
-            setPadding(50, 30, 50, 30)
-        }
-
-        AlertDialog.Builder(this)
-            .setTitle("Configure API Server URL")
-            .setMessage("Enter the backend API server base URL. (For local physical phones, use your computer's Wi-Fi IP, e.g. http://192.168.1.15:5000/)")
-            .setView(input)
-            .setPositiveButton("Save") { dialog, _ ->
-                val newUrl = input.text.toString().trim()
-                if (newUrl.isNotEmpty()) {
-                    sharedPref.edit().putString("server_url", newUrl).apply()
-                    ApiClient.reset()
-                    authService = ApiClient.getService(this)
-                    updateServerUrlButtonText()
-                    Toast.makeText(this, "API Server URL updated successfully!", Toast.LENGTH_LONG).show()
-                } else {
-                    Toast.makeText(this, "URL cannot be empty.", Toast.LENGTH_SHORT).show()
-                }
-                dialog.dismiss()
-            }
-            .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
-            .show()
-    }
 
     override fun onDestroy() {
         super.onDestroy()

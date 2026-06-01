@@ -130,11 +130,11 @@ class CheckInActivity : AppCompatActivity() {
     private fun updateNetworkUI() {
         if (isOfflineMode) {
             networkStateBanner.setBackgroundColor(ContextCompat.getColor(this, android.R.color.holo_orange_dark))
-            networkStateText.text = "⚠️ OFFLINE — LOCAL ARRIVAL QUEUE ACTIVATED (SYNC PENDING)"
+            networkStateText.text = "OFFLINE — LOCAL ARRIVAL QUEUE ACTIVATED (SYNC PENDING)"
             networkStateText.setTextColor(ContextCompat.getColor(this, android.R.color.white))
         } else {
             networkStateBanner.setBackgroundColor(ContextCompat.getColor(this, android.R.color.holo_green_dark))
-            networkStateText.text = "🟢 ACTIVE — SYNCHRONIZED WITH CLOUD"
+            networkStateText.text = "ACTIVE — SYNCHRONIZED WITH CLOUD"
             networkStateText.setTextColor(ContextCompat.getColor(this, android.R.color.white))
         }
     }
@@ -237,6 +237,9 @@ class CheckInActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), 999)
         } else {
             val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            takePictureIntent.putExtra("android.intent.extras.CAMERA_FACING", 1) // 1 = CAMERA_FACING_FRONT
+            takePictureIntent.putExtra("android.intent.extras.LENS_FACING_FRONT", 1)
+            takePictureIntent.putExtra("android.intent.extra.USE_FRONT_CAMERA", true)
             if (takePictureIntent.resolveActivity(packageManager) != null) {
                 captureFaceButton.isEnabled = false
                 takeFacePhotoLauncher.launch(takePictureIntent)
@@ -250,7 +253,7 @@ class CheckInActivity : AppCompatActivity() {
         if (!checkConnection()) {
             // OFFLINE - Cache it in local queue!
             cacheOfflineCheckIn(studentId, photo, "face")
-            Toast.makeText(this, "🟢 Check-in cached locally in Queue! Will auto-sync when online.", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Check-in cached locally in Queue! Will auto-sync when online.", Toast.LENGTH_LONG).show()
             return
         }
 
@@ -265,7 +268,7 @@ class CheckInActivity : AppCompatActivity() {
                 if (response.isSuccessful && body?.status == "success") {
                     val conf = body.faceConfidence ?: 100.0
                     val confInt = conf.toInt()
-                    faceStatusText.text = "✅ Match Success! Confidence: $confInt%"
+                    faceStatusText.text = "Match Success! Confidence: $confInt%"
                     faceStatusText.setTextColor(ContextCompat.getColor(this@CheckInActivity, android.R.color.holo_green_light))
                     captureFaceButton.isEnabled = false
                     Toast.makeText(this@CheckInActivity, "Check-in verified successfully!", Toast.LENGTH_LONG).show()
@@ -283,12 +286,17 @@ class CheckInActivity : AppCompatActivity() {
                         e.printStackTrace()
                     }
 
-                    if (msg.contains("already been verified", ignoreCase = true)) {
-                        faceStatusText.text = "✅ You have already been verified."
+                    if (rem <= 0 && !msg.contains("already been verified", ignoreCase = true)) {
+                        faceStatusText.text = "Account flagged for manual marshal verification."
+                        faceStatusText.setTextColor(ContextCompat.getColor(this@CheckInActivity, android.R.color.holo_red_light))
+                        captureFaceButton.isEnabled = false
+                        attemptsText.text = "Attempts Remaining: 0"
+                    } else if (msg.contains("already been verified", ignoreCase = true)) {
+                        faceStatusText.text = "You have already been verified."
                         faceStatusText.setTextColor(ContextCompat.getColor(this@CheckInActivity, android.R.color.holo_green_light))
                         captureFaceButton.isEnabled = false
                     } else {
-                        faceStatusText.text = "❌ $msg (Attempts left: $rem)"
+                        faceStatusText.text = "$msg (Attempts left: $rem)"
                         faceStatusText.setTextColor(ContextCompat.getColor(this@CheckInActivity, android.R.color.holo_red_light))
                         attemptsText.text = "Attempts Remaining: $rem"
                     }
@@ -376,7 +384,7 @@ class CheckInActivity : AppCompatActivity() {
     private fun submitPeerCheckInNetwork(peerId: String, photoBase64: String) {
         if (!checkConnection()) {
             cacheOfflineCheckIn(peerId, photoBase64, "peer")
-            Toast.makeText(this, "🟢 Peer Check-in cached locally in Queue!", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Peer Check-in cached locally in Queue!", Toast.LENGTH_LONG).show()
             capturePeerFaceButton.isEnabled = false
             peerStudentIdInput.setText("")
             peerNameText.visibility = View.GONE
@@ -393,11 +401,11 @@ class CheckInActivity : AppCompatActivity() {
                     val conf = body.faceConfidence ?: 100.0
                     Toast.makeText(this@CheckInActivity, "Peer Check-in verified on Supabase! (Conf: $conf%)", Toast.LENGTH_LONG).show()
                     peerStudentIdInput.setText("")
-                    peerNameText.text = "✅ Companion Checked In Successfully!"
+                    peerNameText.text = "Companion Checked In Successfully!"
                     peerNameText.setTextColor(ContextCompat.getColor(this@CheckInActivity, android.R.color.holo_green_dark))
                 } else {
                     capturePeerFaceButton.isEnabled = true
-                    peerNameText.text = "❌ Peer check failed: ${body?.message}"
+                    peerNameText.text = "Peer check failed: ${body?.message}"
                     peerNameText.setTextColor(ContextCompat.getColor(this@CheckInActivity, android.R.color.holo_red_light))
                 }
             }
@@ -422,7 +430,7 @@ class CheckInActivity : AppCompatActivity() {
 
         if (!checkConnection()) {
             cacheOfflineDistress(currentStudentId, locationSim, timestamp)
-            Toast.makeText(this, "🚨 DISTRESS SIGNAL QUEUED LOCALLY! Retransmitting aggressively...", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "DISTRESS SIGNAL QUEUED LOCALLY! Retransmitting aggressively...", Toast.LENGTH_LONG).show()
             return
         }
 
@@ -435,7 +443,7 @@ class CheckInActivity : AppCompatActivity() {
                 distressButton.isEnabled = true
                 val body = response.body()
                 if (response.isSuccessful && body?.status == "success") {
-                    Toast.makeText(this@CheckInActivity, "🚨 Distress beacon broadcasted successfully to safety marshals!", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@CheckInActivity, "Distress beacon broadcasted successfully to safety marshals!", Toast.LENGTH_LONG).show()
                 } else {
                     Toast.makeText(this@CheckInActivity, body?.message ?: "Failed to trigger.", Toast.LENGTH_LONG).show()
                 }
@@ -507,7 +515,7 @@ class CheckInActivity : AppCompatActivity() {
         val distressQueue: MutableList<CachedDistress> = gson.fromJson(distressJson, distressType)
 
         if (distressQueue.isNotEmpty()) {
-            Toast.makeText(this, "🔄 Syncing ${distressQueue.size} distress signals to Supabase...", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Syncing ${distressQueue.size} distress signals to Supabase...", Toast.LENGTH_SHORT).show()
             val iterator = distressQueue.iterator()
             while (iterator.hasNext()) {
                 val item = iterator.next()
@@ -529,7 +537,7 @@ class CheckInActivity : AppCompatActivity() {
         val checkinQueue: MutableList<CachedCheckIn> = gson.fromJson(checkinsJson, checkinTypeToken)
 
         if (checkinQueue.isNotEmpty()) {
-            Toast.makeText(this, "🔄 Syncing ${checkinQueue.size} check-ins to Supabase...", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Syncing ${checkinQueue.size} check-ins to Supabase...", Toast.LENGTH_SHORT).show()
             val iterator = checkinQueue.iterator()
             while (iterator.hasNext()) {
                 val item = iterator.next()

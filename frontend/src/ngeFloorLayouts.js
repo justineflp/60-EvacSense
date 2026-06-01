@@ -17,7 +17,7 @@ export const NGE_FLOOR_LAYOUTS = {
     'CORRIDOR-1A': { x: 330, y: 195, color: '#fbbf24', label: 'Main Hallway' },
     'STAIR-MAIN-F1': { x: 330, y: 390, color: '#f97316', label: 'Main Stairs ↕' },
     'STAIR-FIRE-F1': { x: 70, y: 55, color: '#f97316', label: 'Fire Exit ↕' },
-    'EXIT-CIT-FIELD': { x: 50, y: 390, color: '#10b981', label: 'CIT Field ★' },
+    'EXIT-CIT-FIELD': { x: 50, y: 390, color: '#10b981', label: 'CIT Field' },
   },
   2: {
     'ROOM-205': { x: 540, y: 55, color: '#3b82f6', label: 'Lab 205' },

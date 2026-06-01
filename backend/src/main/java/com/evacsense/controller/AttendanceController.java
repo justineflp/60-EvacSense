@@ -240,6 +240,17 @@ public class AttendanceController {
 
             return ResponseEntity.ok(response);
         } else {
+            if (result.attemptsRemaining == 0) {
+                attendance.setStatus("Missing");
+                attendance.setVerifiedBy("requires-marshal");
+                classroomAttendanceRepository.save(attendance);
+
+                sessionLogger.logEvent("failed_attempt", companion.getEmail(), ip, 
+                        "Peer face recognition lockout triggered after 3 failures for classmate " + classmateId);
+
+                drillController.broadcastUpdate();
+            }
+
             Map<String, Object> response = new HashMap<>();
             response.put("status", "error");
             response.put("attemptsRemaining", result.attemptsRemaining);
@@ -286,14 +297,14 @@ public class AttendanceController {
         classroomAttendanceRepository.save(attendance);
 
         sessionLogger.logEvent("failed_attempt", student.getEmail(), ip, 
-                "🚨 EMERGENCY DISTRESS ALERT TRIGGERED. Location: " + location);
+                "EMERGENCY DISTRESS ALERT TRIGGERED. Location: " + location);
 
         // Broadcast distress SSE
         drillController.broadcastUpdate();
 
         Map<String, Object> response = new HashMap<>();
         response.put("status", "success");
-        response.put("message", "🚨 Emergency distress signal recorded. Safety marshals have been dispatched.");
+        response.put("message", "Emergency distress signal recorded. Safety marshals have been dispatched.");
 
         return ResponseEntity.ok(response);
     }
