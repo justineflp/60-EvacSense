@@ -18,7 +18,10 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-
+import com.google.gson.reflect.TypeToken
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 class NavigationActivity : AppCompatActivity() {
 
     private lateinit var statusBanner: TextView
@@ -36,6 +39,7 @@ class NavigationActivity : AppCompatActivity() {
     // Default fallback room if no baseline localized room exists
     private var detectedOriginRoomId = "ROOM-101" 
     private var detectedOriginRoomName = "CS Lab 1 (Room 401)"
+    private lateinit var currentStudentId: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,6 +63,9 @@ class NavigationActivity : AppCompatActivity() {
         // Read detected origin room extra if passed from dashboard auto-localization trigger
         detectedOriginRoomId = intent.getStringExtra("DETECTED_ROOM_ID") ?: "ROOM-101"
         detectedOriginRoomName = intent.getStringExtra("DETECTED_ROOM_NAME") ?: "CS Lab 1 (Room 401)"
+        
+        val sharedPref = getSharedPreferences("evacsense_prefs", Context.MODE_PRIVATE)
+        currentStudentId = sharedPref.getString("user_id", "USR-001") ?: "USR-001"
 
         // Start route loading
         loadRouteDirections()
@@ -83,6 +90,9 @@ class NavigationActivity : AppCompatActivity() {
             return
         }
 
+        // Attempt to flush offline distress queue
+        flushDistressQueue(token)
+
         // Fetch routing data
         authService.getEvacuationRoute("Bearer $token", detectedOriginRoomId).enqueue(object : Callback<RouteResponse> {
             override fun onResponse(call: Call<RouteResponse>, response: Response<RouteResponse>) {
@@ -93,6 +103,8 @@ class NavigationActivity : AppCompatActivity() {
                     
                     // Cache the route payload for offline fallback synchronization
                     cacheRoutePayload(body.route)
+                } else if (response.code() == 404) {
+                    handleAllRoutesBlocked()
                 } else {
                     // Fallback to offline cached route if server rejected the request
                     activateOfflineMode()
@@ -145,8 +157,94 @@ class NavigationActivity : AppCompatActivity() {
     }
 
     private fun handleDistressAlert() {
-        // Send emergency signal (simulate distress sync)
-        Toast.makeText(this, "DISTRESS SENT! Coordinates registered. Safety team is responding.", Toast.LENGTH_LONG).show()
+        val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
+        val timestamp = sdf.format(Date())
+        val locationSim = detectedOriginRoomName
+
+        if (!isNetworkConnected()) {
+            cacheOfflineDistress(currentStudentId, locationSim, timestamp)
+            Toast.makeText(this, "DISTRESS SIGNAL QUEUED LOCALLY! Retransmitting aggressively...", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        distressButton.isEnabled = false
+        val request = DistressRequest(currentStudentId, locationSim, timestamp)
+        val token = getSharedPreferences("evacsense_prefs", Context.MODE_PRIVATE).getString("auth_token", "") ?: ""
+
+        authService.submitDistressAlert("Bearer $token", request).enqueue(object : Callback<DistressResponse> {
+            override fun onResponse(call: Call<DistressResponse>, response: Response<DistressResponse>) {
+                distressButton.isEnabled = true
+                val body = response.body()
+                if (response.isSuccessful && body?.status == "success") {
+                    Toast.makeText(this@NavigationActivity, "Distress beacon broadcasted successfully to safety marshals!", Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(this@NavigationActivity, body?.message ?: "Failed to trigger.", Toast.LENGTH_LONG).show()
+                }
+            }
+
+            override fun onFailure(call: Call<DistressResponse>, t: Throwable) {
+                distressButton.isEnabled = true
+                cacheOfflineDistress(currentStudentId, locationSim, timestamp)
+                Toast.makeText(this@NavigationActivity, "Signal queued locally.", Toast.LENGTH_LONG).show()
+            }
+        })
+    }
+
+    private fun cacheOfflineDistress(studentId: String, location: String, timestamp: String) {
+        val sharedPref = getSharedPreferences("evacsense_prefs", Context.MODE_PRIVATE)
+        val gson = Gson()
+
+        val queueJson = sharedPref.getString("offline_distress_queue", "[]")
+        val itemType = object : TypeToken<MutableList<CachedDistress>>() {}.type
+        val queue: MutableList<CachedDistress> = gson.fromJson(queueJson, itemType)
+
+        queue.add(CachedDistress(studentId, location, timestamp))
+        sharedPref.edit().putString("offline_distress_queue", gson.toJson(queue)).apply()
+    }
+
+    private fun flushDistressQueue(token: String) {
+        val sharedPref = getSharedPreferences("evacsense_prefs", Context.MODE_PRIVATE)
+        val gson = Gson()
+
+        val distressJson = sharedPref.getString("offline_distress_queue", "[]")
+        val distressType = object : TypeToken<MutableList<CachedDistress>>() {}.type
+        val distressQueue: MutableList<CachedDistress> = gson.fromJson(distressJson, distressType)
+
+        if (distressQueue.isNotEmpty()) {
+            val iterator = distressQueue.iterator()
+            while (iterator.hasNext()) {
+                val item = iterator.next()
+                val request = DistressRequest(item.studentId, item.location, item.timestamp)
+                authService.submitDistressAlert("Bearer $token", request).enqueue(object : Callback<DistressResponse> {
+                    override fun onResponse(call: Call<DistressResponse>, response: Response<DistressResponse>) {
+                        if (response.isSuccessful) {
+                            iterator.remove()
+                            sharedPref.edit().putString("offline_distress_queue", gson.toJson(distressQueue)).apply()
+                        }
+                    }
+                    override fun onFailure(call: Call<DistressResponse>, t: Throwable) {}
+                })
+            }
+        }
+    }
+
+    private fun handleAllRoutesBlocked() {
+        offlineWarningBanner.visibility = View.VISIBLE
+        offlineWarningBanner.text = "ALL ROUTES BLOCKED. AWAIT MARSHAL INSTRUCTIONS."
+        offlineWarningBanner.setBackgroundColor(resources.getColor(android.R.color.holo_red_dark, theme))
+        offlineWarningBanner.setTextColor(resources.getColor(android.R.color.white, theme))
+
+        routeTitleText.text = "Origin: $detectedOriginRoomName → Exit: Blocked"
+        routeMetricsText.text = "Est. Distance: N/A | Status: TRAPPED"
+
+        directionsContainer.removeAllViews()
+
+        val tv = TextView(this)
+        tv.text = "No safe evacuation route available from your current location.\n\nPlease press the Distress Alert button below to notify safety marshals immediately."
+        tv.setTextColor(resources.getColor(android.R.color.holo_red_light, theme))
+        tv.textSize = 15f
+        tv.setPadding(8, 8, 8, 8)
+        directionsContainer.addView(tv)
     }
 
     private fun isNetworkConnected(): Boolean {

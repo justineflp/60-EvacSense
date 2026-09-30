@@ -417,10 +417,15 @@ public class DrillController {
             ));
         }
 
+        // Get list of users who have successfully checked in at the assembly area (Module 4)
+        List<String> arrivedUserIds = attendances.stream()
+                .filter(a -> "Present".equals(a.getStatus()) || "Present (Peer-Assisted)".equals(a.getStatus()))
+                .map(ClassroomAttendance::getUserId).toList();
+
         // 2. Unverified students list
         List<Map<String, Object>> unverifiedList = new ArrayList<>();
         for (ClassroomOccupancy o : occupancies) {
-            if ("Location-Unverified".equals(o.getStatus())) {
+            if ("Location-Unverified".equals(o.getStatus()) && !arrivedUserIds.contains(o.getUserId())) {
                 Optional<User> uOpt = users.stream().filter(usr -> usr.getId().equals(o.getUserId())).findFirst();
                 if (uOpt.isPresent()) {
                     User u = uOpt.get();
@@ -461,9 +466,6 @@ public class DrillController {
         }
 
         // 5. Missing list (Assigned baseline occupants who have NOT checked in)
-        List<String> arrivedUserIds = attendances.stream()
-                .filter(a -> "Present".equals(a.getStatus()) || "Present (Peer-Assisted)".equals(a.getStatus()))
-                .map(ClassroomAttendance::getUserId).toList();
 
         List<Map<String, Object>> missingList = new ArrayList<>();
         for (ClassroomOccupancy o : occupancies) {
