@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import LoginForm from '../components/LoginForm';
-import { Zap } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 
 export default function WebLoginPage({ onLoginSuccess, navigate }) {
@@ -147,7 +146,7 @@ export default function WebLoginPage({ onLoginSuccess, navigate }) {
             color: '#ffffff',
             boxShadow: '0 8px 24px rgba(153, 27, 27, 0.35)',
             fontFamily: 'Outfit'
-          }}><Zap size={32} /></div>
+          }}><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></div>
           <h1 className="brand-title" style={{ fontSize: '2rem' }}>EvacSense</h1>
           <p className="brand-subtitle" style={{ fontSize: '0.75rem' }}>CIT-U Earthquake Drill Suite</p>
         </div>

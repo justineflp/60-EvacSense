@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Key } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 
 export default function AccountRecoveryPage({ navigate }) {
@@ -56,7 +55,7 @@ export default function AccountRecoveryPage({ navigate }) {
             justifyContent: 'center',
             fontSize: '1.5rem',
             color: 'var(--accent-gold)'
-          }}><Key size={32} /></div>
+          }}><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.778-7.778zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg></div>
           <h1 className="brand-title" style={{ fontSize: '1.75rem' }}>Account Recovery</h1>
           <p className="brand-subtitle">Reset Secure Credentials</p>
         </div>
