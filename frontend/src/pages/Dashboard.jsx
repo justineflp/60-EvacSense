@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Shield, AlertTriangle, AlertCircle, Map as MapIcon, RefreshCw, Printer, Moon, PlayCircle, StopCircle, MapPin, BarChart2, ClipboardList, PartyPopper, Building, CheckCircle, CheckCircle2, Link, Download } from 'lucide-react';
+import { Shield, AlertTriangle, AlertCircle, Map as MapIcon, RefreshCw, Printer, Moon, PlayCircle, StopCircle, MapPin, BarChart2, ClipboardList, Building, CheckCircle, CheckCircle2, Link, Download } from 'lucide-react';
 import { NGE_FLOOR_LAYOUTS, NGE_FLOOR_TITLES } from '../ngeFloorLayouts';
 import { API_BASE_URL } from '../config';
 
@@ -14,7 +14,7 @@ export default function Dashboard({ user, token, onLogout }) {
   const [roomsOccupancy, setRoomsOccupancy] = useState([]);
   const [unverifiedList, setUnverifiedList] = useState([]);
   const [totalParticipants, setTotalParticipants] = useState(0);
-  const [verifiedCount, setVerifiedCount] = useState(0);
+  const [, setVerifiedCount] = useState(0);
   const [unverifiedCount, setUnverifiedCount] = useState(0);
   const [loadingDrill, setLoadingDrill] = useState(false);
 
@@ -43,7 +43,7 @@ export default function Dashboard({ user, token, onLogout }) {
   // Module 3 Graph States
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
-  const [loadingGraph, setLoadingGraph] = useState(false);
+  const [, setLoadingGraph] = useState(false);
   const [selectedOrigin, setSelectedOrigin] = useState('');
   const [testPath, setTestPath] = useState([]);
   const [testInstructions, setTestInstructions] = useState([]);
@@ -414,6 +414,7 @@ export default function Dashboard({ user, token, onLogout }) {
     return () => {
       sseSource.close();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user.role, token]);
 
   const handleRoleChange = async (userId, newRole) => {
@@ -699,7 +700,7 @@ export default function Dashboard({ user, token, onLogout }) {
               </div>
             ) : (
               <div style={{ padding: '2rem', textAlign: 'center', background: 'rgba(255,255,255,0.01)', border: '1px dashed var(--border-glass)', borderRadius: '12px' }}>
-                <span style={{ fontSize: '1.75rem', display: 'block', marginBottom: '0.5rem', display: 'flex', justifyContent: 'center' }}><Moon size={28} /></span>
+                <span style={{ fontSize: '1.75rem', display: 'flex', marginBottom: '0.5rem', justifyContent: 'center' }}><Moon size={28} /></span>
                 <strong style={{ color: '#ffffff', display: 'block' }}>No Active Drill Session</strong>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>Drill baselines and classroom triangulation scans will open when a safety officer triggers the drill.</p>
               </div>
