@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:476467503204:android:1cc7a715d40160f076ff71",
         "android_client_info": {
-          "package_name": "Evac.Sense"
+          "package_name": "com.evacsense.auth"
         }
       },
       "oauth_client": [],
