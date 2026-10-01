@@ -11,7 +11,9 @@ import retrofit2.http.Header
  */
 interface AuthService {
     companion object {
-        const val BASE_URL = "http://10.0.2.2:5000/"
+        // TODO: Replace with your Render backend URL once deployed
+        // e.g. "https://evacsense-backend.onrender.com/"
+        const val BASE_URL = "https://evacsense-backend.onrender.com/"
     }
 
     @POST("api/auth/login")
