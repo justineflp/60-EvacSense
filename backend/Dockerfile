@@ -20,4 +20,4 @@ COPY --from=build /app/target/evacsense-backend-1.0.0.jar app.jar
 EXPOSE 5000
 
 # Run Spring Boot application
-ENTRYPOINT ["java", "-Dserver.port=5000", "-jar", "app.jar"]
+ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT:-5000} -jar app.jar"]

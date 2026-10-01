@@ -64,8 +64,8 @@ public class DatabaseConfig {
                 String path = uri.getPath();
                 String userInfo = uri.getUserInfo();
                 
-                String username = userInfo.split(":")[0];
-                String password = userInfo.split(":")[1];
+                String username = java.net.URLDecoder.decode(userInfo.split(":")[0], java.nio.charset.StandardCharsets.UTF_8);
+                String password = java.net.URLDecoder.decode(userInfo.split(":")[1], java.nio.charset.StandardCharsets.UTF_8);
                 
                 String jdbcUrl = "jdbc:postgresql://" + host + ":" + port + path;
                 if (jdbcUrl.contains("?")) {

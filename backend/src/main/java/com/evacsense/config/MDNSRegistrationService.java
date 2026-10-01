@@ -57,8 +57,8 @@ public class MDNSRegistrationService {
 
             logger.info("Successfully registered mDNS service: EvacSenseBackend on port 5000");
 
-        } catch (IOException e) {
-            logger.error("Failed to register mDNS service", e);
+        } catch (Throwable e) {
+            logger.warn("mDNS registration skipped or failed (common in cloud environments): {}", e.getMessage());
         }
     }
 
