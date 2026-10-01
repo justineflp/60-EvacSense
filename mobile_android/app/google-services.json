@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "476467503204",
+    "project_id": "evacsense-64cc2",
+    "storage_bucket": "evacsense-64cc2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:476467503204:android:1cc7a715d40160f076ff71",
+        "android_client_info": {
+          "package_name": "Evac.Sense"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB07Jr3bYSbv58yaau9DJPzwyyitlVgNmw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
