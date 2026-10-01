@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Key } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function AccountRecoveryPage({ navigate }) {
   const [email, setEmail] = useState('');
@@ -14,7 +15,7 @@ export default function AccountRecoveryPage({ navigate }) {
     setError('');
 
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/auth/recovery', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/recovery`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })

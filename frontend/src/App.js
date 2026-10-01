@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import WebLoginPage from './pages/WebLoginPage';
 import Dashboard from './pages/Dashboard';
 import AccountRecoveryPage from './pages/AccountRecoveryPage';
+import { API_BASE_URL } from './config';
 
 export default function App() {
   const [view, setView] = useState('login'); // login | dashboard | recovery
@@ -19,7 +20,7 @@ export default function App() {
       }
 
       try {
-        const response = await fetch('http://localhost:5000/api/auth/validate-token', {
+        const response = await fetch(`${API_BASE_URL}/api/auth/validate-token`, {
           headers: { 'Authorization': `Bearer ${savedToken}` }
         });
         const data = await response.json();

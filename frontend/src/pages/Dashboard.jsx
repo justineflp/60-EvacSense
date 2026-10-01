@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Shield, AlertTriangle, AlertCircle, Map as MapIcon, RefreshCw, Printer, Moon, PlayCircle, StopCircle, MapPin, BarChart2, ClipboardList, PartyPopper, Building, CheckCircle, CheckCircle2, Link, Download } from 'lucide-react';
 import { NGE_FLOOR_LAYOUTS, NGE_FLOOR_TITLES } from '../ngeFloorLayouts';
+import { API_BASE_URL } from '../config';
 
 export default function Dashboard({ user, token, onLogout }) {
   const [usersList, setUsersList] = useState([]);
@@ -65,12 +66,12 @@ export default function Dashboard({ user, token, onLogout }) {
   const fetchGraph = async () => {
     setLoadingGraph(true);
     try {
-      const nodesRes = await fetch('http://127.0.0.1:5000/api/nav/nodes', {
+      const nodesRes = await fetch(`${API_BASE_URL}/api/nav/nodes`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const nodesData = await nodesRes.json();
       
-      const edgesRes = await fetch('http://127.0.0.1:5000/api/nav/edges', {
+      const edgesRes = await fetch(`${API_BASE_URL}/api/nav/edges`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const edgesData = await edgesRes.json();
@@ -93,7 +94,7 @@ export default function Dashboard({ user, token, onLogout }) {
     setTestInstructions([]);
     setErrorPath('');
     try {
-      const res = await fetch(`http://127.0.0.1:5000/api/nav/route?origin=${originId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/nav/route?origin=${originId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -113,7 +114,7 @@ export default function Dashboard({ user, token, onLogout }) {
     setActionMessage('');
     setActionError('');
     try {
-      const res = await fetch('http://127.0.0.1:5000/api/nav/block', {
+      const res = await fetch(`${API_BASE_URL}/api/nav/block`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -143,7 +144,7 @@ export default function Dashboard({ user, token, onLogout }) {
     setActionMessage('');
     setActionError('');
     try {
-      const res = await fetch('http://127.0.0.1:5000/api/nav/edges', {
+      const res = await fetch(`${API_BASE_URL}/api/nav/edges`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -175,7 +176,7 @@ export default function Dashboard({ user, token, onLogout }) {
     setActionMessage('');
     setActionError('');
     try {
-      const res = await fetch('http://127.0.0.1:5000/api/nav/nodes', {
+      const res = await fetch(`${API_BASE_URL}/api/nav/nodes`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -215,7 +216,7 @@ export default function Dashboard({ user, token, onLogout }) {
     setLoadingUsers(true);
     setActionError('');
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/users', {
+      const response = await fetch(`${API_BASE_URL}/api/users`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
@@ -236,7 +237,7 @@ export default function Dashboard({ user, token, onLogout }) {
     if (user.role !== 'System Admin') return;
     setLoadingRequests(true);
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/admin/requests', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/requests`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
@@ -255,7 +256,7 @@ export default function Dashboard({ user, token, onLogout }) {
     if (user.role === 'Student') return;
     setLoadingDrill(true);
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/presence/occupancy', {
+      const response = await fetch(`${API_BASE_URL}/api/presence/occupancy`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
@@ -305,7 +306,7 @@ export default function Dashboard({ user, token, onLogout }) {
     setActionMessage('');
     setActionError('');
     try {
-      const res = await fetch(`http://127.0.0.1:5000/api/checkin/clear/${targetUserId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/checkin/clear/${targetUserId}`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -324,7 +325,7 @@ export default function Dashboard({ user, token, onLogout }) {
   // Module 5 Report Generation Helpers
   const fetchDrillsList = async () => {
     try {
-      const res = await fetch('http://127.0.0.1:5000/api/reports/list', {
+      const res = await fetch(`${API_BASE_URL}/api/reports/list`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -341,7 +342,7 @@ export default function Dashboard({ user, token, onLogout }) {
     setLoadingReport(true);
     setReportData(null);
     try {
-      const res = await fetch(`http://127.0.0.1:5000/api/reports/report/${drillId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/reports/report/${drillId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -361,7 +362,7 @@ export default function Dashboard({ user, token, onLogout }) {
     }
     
     // Connect all authenticated roles (including Student) to real-time events stream
-    const sseSource = new EventSource('http://127.0.0.1:5000/api/presence/realtime');
+    const sseSource = new EventSource(`${API_BASE_URL}/api/presence/realtime`);
 
     if (user.role === 'System Admin' || user.role === 'Drill Coordinator' || user.role === 'Teacher') {
       fetchGraph();
@@ -419,7 +420,7 @@ export default function Dashboard({ user, token, onLogout }) {
     setActionMessage('');
     setActionError('');
     try {
-      const response = await fetch(`http://127.0.0.1:5000/api/users/${userId}/role`, {
+      const response = await fetch(`${API_BASE_URL}/api/users/${userId}/role`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -443,7 +444,7 @@ export default function Dashboard({ user, token, onLogout }) {
     setActionMessage('');
     setActionError('');
     try {
-      const response = await fetch(`http://127.0.0.1:5000/api/admin/requests/${requestId}/approve`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/requests/${requestId}/approve`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -469,7 +470,7 @@ export default function Dashboard({ user, token, onLogout }) {
     setActionError('');
 
     try {
-      const response = await fetch(`http://127.0.0.1:5000/api/admin/requests/${rejectingId}/reject`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/requests/${rejectingId}/reject`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -497,7 +498,7 @@ export default function Dashboard({ user, token, onLogout }) {
     setActionError('');
     setLoadingDrill(true);
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/drill/start', {
+      const response = await fetch(`${API_BASE_URL}/api/drill/start`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -525,7 +526,7 @@ export default function Dashboard({ user, token, onLogout }) {
     setActionError('');
     setLoadingDrill(true);
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/drill/conclude', {
+      const response = await fetch(`${API_BASE_URL}/api/drill/conclude`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -545,7 +546,7 @@ export default function Dashboard({ user, token, onLogout }) {
 
   const handleLogoutClick = async () => {
     try {
-      await fetch('http://127.0.0.1:5000/api/auth/logout', {
+      await fetch(`${API_BASE_URL}/api/auth/logout`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -1690,7 +1691,7 @@ export default function Dashboard({ user, token, onLogout }) {
                         {/* Export Buttons */}
                         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1.25rem' }}>
                           <a
-                            href={`http://127.0.0.1:5000/api/reports/export/csv/${reportData.drillId}`}
+                            href={`${API_BASE_URL}/api/reports/export/csv/${reportData.drillId}`}
                             className="btn btn-secondary"
                             style={{ width: 'auto', padding: '0.6rem 1.25rem', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
                           >

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import LoginForm from '../components/LoginForm';
 import { Zap } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function WebLoginPage({ onLoginSuccess, navigate }) {
   const [view, setView] = useState('login'); // login | register | sso_select
@@ -21,7 +22,7 @@ export default function WebLoginPage({ onLoginSuccess, navigate }) {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -63,7 +64,7 @@ export default function WebLoginPage({ onLoginSuccess, navigate }) {
       let bodyData = {};
 
       if (regRole === 'Student') {
-        endpoint = 'http://127.0.0.1:5000/api/auth/register/student';
+        endpoint = `${API_BASE_URL}/api/auth/register/student`;
         bodyData = {
           name: regName,
           email: regEmail,
@@ -72,7 +73,7 @@ export default function WebLoginPage({ onLoginSuccess, navigate }) {
           deviceId: 'DEVICE-' + Math.floor(1000 + Math.random() * 9000)
         };
       } else {
-        endpoint = 'http://127.0.0.1:5000/api/auth/register/staff';
+        endpoint = `${API_BASE_URL}/api/auth/register/staff`;
         bodyData = {
           name: regName,
           email: regEmail,
