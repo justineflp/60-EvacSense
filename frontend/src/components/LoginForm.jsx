@@ -52,7 +52,7 @@ export default function LoginForm({ onSubmit, loading, errorMessage }) {
           marginBottom: '1rem',
           textAlign: 'left'
         }}>
-          <strong>Auth Error:</strong> {errorMessage}
+          <strong>Auth Error:</strong> {typeof errorMessage === 'object' ? JSON.stringify(errorMessage) : String(errorMessage)}
         </div>
       )}
 

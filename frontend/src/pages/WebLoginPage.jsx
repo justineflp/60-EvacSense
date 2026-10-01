@@ -29,6 +29,17 @@ export default function WebLoginPage({ onLoginSuccess, navigate }) {
       });
       const data = await response.json();
       
+      const getErrMsg = (msg, errs, fallback) => {
+        if (typeof msg === 'string') return msg;
+        if (Array.isArray(errs) && errs.length > 0) {
+          const first = errs[0];
+          if (typeof first === 'string') return first;
+          if (typeof first === 'object' && first !== null) return first.message || first.error || JSON.stringify(first);
+        }
+        if (typeof msg === 'object' && msg !== null) return msg.message || msg.error || JSON.stringify(msg);
+        return fallback;
+      };
+
       if (response.ok && data.status === 'success') {
         if (data.user.role === 'Student') {
           setError('Access Denied: Student accounts must use the EvacSense Mobile App.');
@@ -36,7 +47,7 @@ export default function WebLoginPage({ onLoginSuccess, navigate }) {
         }
         onLoginSuccess(data.session.token, data.user);
       } else {
-        setError(data.message || data.errors?.[0] || 'Authentication failed.');
+        setError(getErrMsg(data.message, data.errors, 'Authentication failed.'));
       }
     } catch (err) {
       setError('Connection to EvacSense authorization server failed. Make sure the backend is running.');
@@ -92,14 +103,15 @@ export default function WebLoginPage({ onLoginSuccess, navigate }) {
       const data = await response.json();
 
       if (response.ok && (data.status === 'success' || data.status === 'pending')) {
-        setSuccessMessage(data.message);
+        setSuccessMessage(typeof data.message === 'string' ? data.message : 'Registration successful.');
         // Clear fields
         setRegName('');
         setRegEmail('');
         setRegId('');
         setRegPassword('');
       } else {
-        setError(data.message || data.errors?.[0] || 'Registration failed.');
+        const rawErr = data.message || data.errors?.[0];
+        setError(typeof rawErr === 'string' ? rawErr : (typeof rawErr === 'object' && rawErr !== null ? rawErr.message || JSON.stringify(rawErr) : 'Registration failed.'));
       }
 
     } catch (err) {
