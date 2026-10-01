@@ -67,12 +67,7 @@ public class DatabaseConfig {
                 String username = java.net.URLDecoder.decode(userInfo.split(":")[0], java.nio.charset.StandardCharsets.UTF_8);
                 String password = java.net.URLDecoder.decode(userInfo.split(":")[1], java.nio.charset.StandardCharsets.UTF_8);
                 
-                String jdbcUrl = "jdbc:postgresql://" + host + ":" + port + path;
-                if (jdbcUrl.contains("?")) {
-                    jdbcUrl += "&prepareThreshold=0";
-                } else {
-                    jdbcUrl += "?prepareThreshold=0";
-                }
+                String jdbcUrl = "jdbc:postgresql://" + host + ":" + port + path + "?prepareThreshold=0&sslmode=require";
                 dataSource.setDriverClassName("org.postgresql.Driver");
                 dataSource.setUrl(jdbcUrl);
                 dataSource.setUsername(username);
