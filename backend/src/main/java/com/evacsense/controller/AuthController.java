@@ -626,6 +626,41 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    // 14. Unlock Locked Account (System Admin)
+    @RequireRole("System Admin")
+    @PutMapping("/admin/users/{id}/unlock")
+    public ResponseEntity<Map<String, Object>> unlockAccount(@PathVariable String id, HttpServletRequest request) {
+        User admin = (User) request.getAttribute("currentUser");
+        String ip = getClientIp(request);
+
+        Optional<User> targetUserOpt = userRepository.findById(id);
+        if (targetUserOpt.isEmpty()) {
+            return buildErrorResponse(HttpStatus.NOT_FOUND, "User not found.", "No user found matching ID: " + id);
+        }
+
+        User targetUser = targetUserOpt.get();
+        if (!"locked".equals(targetUser.getStatus())) {
+            return buildErrorResponse(HttpStatus.BAD_REQUEST, "Account is not locked.", 
+                    "User " + targetUser.getName() + " does not have a locked status.");
+        }
+
+        targetUser.setStatus("active");
+        targetUser.setFailedAttempts(0);
+        userRepository.save(targetUser);
+
+        sessionLogger.logEvent("account_unlock", targetUser.getEmail(), ip, 
+                "Account unlocked by Admin: " + admin.getEmail() + ". Failed attempts reset to 0.");
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "success");
+        response.put("action", "unlock_account");
+        response.put("user", Map.of("id", targetUser.getId(), "name", targetUser.getName(), "email", targetUser.getEmail(), "role", targetUser.getRole()));
+        response.put("message", "Account for " + targetUser.getName() + " has been unlocked successfully. They may now log in.");
+        response.put("errors", Collections.emptyList());
+
+        return ResponseEntity.ok(response);
+    }
+
     // 14. Register Student Photo (Facial Verification Baseline)
     @RequireRole("Student")
     @PostMapping("/auth/register-photo")

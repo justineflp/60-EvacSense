@@ -493,6 +493,29 @@ export default function Dashboard({ user, token, onLogout }) {
     }
   };
 
+  const handleUnlockAccount = async (userId) => {
+    setActionMessage('');
+    setActionError('');
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/admin/users/${userId}/unlock`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      if (response.ok && data.status === 'success') {
+        setActionMessage(data.message);
+        syncAdminData();
+      } else {
+        setActionError(data.message || data.errors?.[0] || 'Unlock failed.');
+      }
+    } catch (err) {
+      setActionError('Account unlock request failed.');
+    }
+  };
+
   // Module 2: Start drill session trigger
   const handleStartDrill = async () => {
     setActionMessage('');
@@ -715,7 +738,7 @@ export default function Dashboard({ user, token, onLogout }) {
             <div className="glass-panel" style={{ padding: '2.25rem', animation: 'fadeIn 0.5s ease-out' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <h3 style={{ fontFamily: 'Outfit', color: '#ffffff', fontSize: '1.4rem', fontWeight: 700 }}>Drill Coordination Dashboard</h3>
+                  <h3 style={{ fontFamily: 'Outfit', color: '#ffffff', fontSize: '1.4rem', fontWeight: 700 }}>{user.role === 'System Admin' ? 'Admin Dashboard' : 'Drill Coordination Dashboard'}</h3>
                   <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Trigger live drill events and evaluate classroom baseline presence tracking</p>
                 </div>
                 
@@ -1202,17 +1225,38 @@ export default function Dashboard({ user, token, onLogout }) {
                                 }}>{usr.status === 'locked' ? 'LOCKED' : usr.status === 'Rejected' ? 'REJECTED' : 'ACTIVE'}</span>
                               </td>
                               <td style={{ padding: '0.75rem 1rem' }}>
-                                <select
-                                  className="form-input"
-                                  value={usr.role}
-                                  onChange={(e) => handleRoleChange(usr.id, e.target.value)}
-                                  style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', background: 'rgba(15,23,42,0.85)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '8px', cursor: 'pointer', color: '#ffffff' }}
-                                >
-                                  <option value="Student">Student</option>
-                                  <option value="Teacher">Teacher/Staff</option>
-                                  <option value="Drill Coordinator">Drill Coordinator</option>
-                                  <option value="System Admin">System Admin</option>
-                                </select>
+                                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                  <select
+                                    className="form-input"
+                                    value={usr.role}
+                                    onChange={(e) => handleRoleChange(usr.id, e.target.value)}
+                                    style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', background: 'rgba(15,23,42,0.85)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '8px', cursor: 'pointer', color: '#ffffff' }}
+                                  >
+                                    <option value="Student">Student</option>
+                                    <option value="Teacher">Teacher/Staff</option>
+                                    <option value="Drill Coordinator">Drill Coordinator</option>
+                                    <option value="System Admin">System Admin</option>
+                                  </select>
+                                  {usr.status === 'locked' && (
+                                    <button
+                                      onClick={() => handleUnlockAccount(usr.id)}
+                                      className="btn btn-primary"
+                                      style={{
+                                        width: 'auto',
+                                        padding: '0.3rem 0.7rem',
+                                        fontSize: '0.7rem',
+                                        background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                                        color: '#ffffff',
+                                        border: 'none',
+                                        boxShadow: 'none',
+                                        whiteSpace: 'nowrap',
+                                        fontWeight: 700
+                                      }}
+                                    >
+                                      🔓 Unlock
+                                    </button>
+                                  )}
+                                </div>
                               </td>
                             </tr>
                           ))}

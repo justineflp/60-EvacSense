@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "evacsense-64cc2",
     "public": "build",
     "ignore": [
       "firebase.json",
