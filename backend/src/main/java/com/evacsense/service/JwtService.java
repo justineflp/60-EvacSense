@@ -22,6 +22,8 @@ public class JwtService {
     public JwtService() {
         String secret = System.getenv("JWT_SECRET");
         if (secret == null || secret.length() < 32) {
+            System.err.println("[SECURITY] WARNING: JWT_SECRET environment variable is not set or too short. " +
+                    "Using default secret — set JWT_SECRET in production to prevent token forgery.");
             secret = DEFAULT_SECRET;
         }
         this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));

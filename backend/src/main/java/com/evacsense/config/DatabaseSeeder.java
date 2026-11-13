@@ -34,14 +34,13 @@ public class DatabaseSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         try {
-            System.out.println("[DATABASE] Beginning database auto-seeding process...");
+            // Only seed if the database is empty — prevents data wipe on every restart
+            if (roomRepository.count() > 0) {
+                System.out.println("[DATABASE] Data already exists. Skipping seeding.");
+                return;
+            }
 
-            // 1. Clear existing attendance logs and transactional records for a clean baseline
-            classroomAttendanceRepository.deleteAll();
-            classroomOccupancyRepository.deleteAll();
-            edgeRepository.deleteAll();
-            accessPointRepository.deleteAll();
-            roomRepository.deleteAll();
+            System.out.println("[DATABASE] Beginning database auto-seeding process...");
 
             // 2. Mock Users Seeding
             String defaultPasswordHash = BCrypt.hashpw("CITCCS2026!", BCrypt.gensalt(10));
@@ -186,7 +185,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
             accessPointRepository.saveAll(aps);
             System.out.println("[DATABASE] Seeded " + aps.size() + " NGE Building Wi-Fi Access Points.");
-            System.out.println("--- DEFAULT ACCOUNT PASSWORD: CITCCS2026! ---");
+            System.out.println("[DATABASE] Auto-seeding complete.");
 
         } catch (Exception e) {
             System.err.println("[DATABASE] Seeding process failed: " + e.getMessage());

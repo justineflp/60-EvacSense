@@ -20,9 +20,14 @@ public class SecurityConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        // Match Node's open cors() policy
         registry.addMapping("/**")
-                .allowedOriginPatterns("*")
+                .allowedOriginPatterns(
+                        "https://*.vercel.app",       // Vercel frontend (all preview + production deployments)
+                        "https://*.onrender.com",     // Render services
+                        "http://localhost:*",         // Local development
+                        "http://10.*.*.*",            // Local network (mobile dev)
+                        "http://192.168.*.*"          // Local network (mobile dev)
+                )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                 .allowedHeaders("*")
                 .allowCredentials(true)

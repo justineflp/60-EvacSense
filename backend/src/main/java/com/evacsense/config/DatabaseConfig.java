@@ -101,7 +101,7 @@ public class DatabaseConfig {
         }
         
         // Explicitly set ddl-auto and sql show properties since we override the autoconfigured EntityManager
-        properties.put("hibernate.hbm2ddl.auto", "update");
+        properties.put("hibernate.hbm2ddl.auto", "validate");
         properties.put("hibernate.show_sql", "false");
         
         return builder

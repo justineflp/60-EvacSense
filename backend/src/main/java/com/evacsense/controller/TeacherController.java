@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,7 +34,10 @@ public class TeacherController {
 
     @RequireRole({"Teacher"})
     @GetMapping("/roster")
-    public ResponseEntity<Map<String, Object>> getRoomRoster(@RequestParam String teacherId) {
+    public ResponseEntity<Map<String, Object>> getRoomRoster(HttpServletRequest request) {
+        // Get teacherId from the authenticated JWT token — prevents IDOR (teacher viewing another teacher's roster)
+        User teacher = (User) request.getAttribute("currentUser");
+        String teacherId = teacher.getId();
         Optional<DrillSession> activeDrillOpt = drillSessionRepository.findFirstByStatus("active");
         if (activeDrillOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("status", "error", "message", "No active drill"));
@@ -75,9 +79,11 @@ public class TeacherController {
 
     @RequireRole({"Teacher"})
     @PostMapping("/request-clearance")
-    public ResponseEntity<Map<String, Object>> requestClearance(@RequestBody Map<String, String> body) {
+    public ResponseEntity<Map<String, Object>> requestClearance(@RequestBody Map<String, String> body, HttpServletRequest request) {
         String studentId = body.get("studentId");
-        String teacherId = body.get("teacherId");
+        // Get teacherId from JWT — prevents spoofing a different teacher's identity
+        User teacher = (User) request.getAttribute("currentUser");
+        String teacherId = teacher.getId();
 
         Optional<DrillSession> activeDrillOpt = drillSessionRepository.findFirstByStatus("active");
         if (activeDrillOpt.isEmpty()) {
