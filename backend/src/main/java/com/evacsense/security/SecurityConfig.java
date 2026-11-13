@@ -22,8 +22,10 @@ public class SecurityConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedOriginPatterns(
-                        "https://*.vercel.app",       // Vercel frontend (all preview + production deployments)
+                        "https://*.vercel.app",       // Vercel frontend
                         "https://*.onrender.com",     // Render services
+                        "https://*.web.app",          // Firebase Hosting (evacsense-64cc2.web.app)
+                        "https://*.firebaseapp.com",  // Firebase alternate domain
                         "http://localhost:*",         // Local development
                         "http://10.*.*.*",            // Local network (mobile dev)
                         "http://192.168.*.*"          // Local network (mobile dev)
