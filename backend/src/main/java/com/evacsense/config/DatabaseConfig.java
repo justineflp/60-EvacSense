@@ -1,6 +1,7 @@
 package com.evacsense.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -52,7 +53,6 @@ public class DatabaseConfig {
     @Bean
     public DataSource dataSource() {
         String supabaseUrl = getSupabaseUrl();
-        DriverManagerDataSource dataSource = new DriverManagerDataSource();
 
         if (supabaseUrl != null && !supabaseUrl.isEmpty()) {
             try {
@@ -63,24 +63,35 @@ public class DatabaseConfig {
                 int port = uri.getPort();
                 String path = uri.getPath();
                 String userInfo = uri.getUserInfo();
-                
+
                 String username = java.net.URLDecoder.decode(userInfo.split(":")[0], java.nio.charset.StandardCharsets.UTF_8);
                 String password = java.net.URLDecoder.decode(userInfo.split(":")[1], java.nio.charset.StandardCharsets.UTF_8);
-                
+
                 String jdbcUrl = "jdbc:postgresql://" + host + ":" + port + path + "?prepareThreshold=0&sslmode=require";
-                dataSource.setDriverClassName("org.postgresql.Driver");
-                dataSource.setUrl(jdbcUrl);
-                dataSource.setUsername(username);
-                dataSource.setPassword(password);
-                
-                System.out.println("[DATABASE] Initializing Supabase cloud PostgreSQL connection (prepareThreshold=0)...");
-                return dataSource;
+
+                // Use HikariCP connection pool — prevents connection exhaustion on PgBouncer (pool_size: 15)
+                HikariConfig hikariConfig = new HikariConfig();
+                hikariConfig.setDriverClassName("org.postgresql.Driver");
+                hikariConfig.setJdbcUrl(jdbcUrl);
+                hikariConfig.setUsername(username);
+                hikariConfig.setPassword(password);
+                hikariConfig.setMaximumPoolSize(3);
+                hikariConfig.setMinimumIdle(1);
+                hikariConfig.setConnectionTimeout(20000);
+                hikariConfig.setIdleTimeout(300000);
+                hikariConfig.setMaxLifetime(600000);
+                hikariConfig.setKeepaliveTime(60000);
+                hikariConfig.addDataSourceProperty("prepareThreshold", "0");
+
+                System.out.println("[DATABASE] Initializing HikariCP pool for Supabase PostgreSQL (max=3, PgBouncer-safe)...");
+                return new HikariDataSource(hikariConfig);
             } catch (Exception e) {
                 System.err.println("[DATABASE] Failed to parse SUPABASE_DB_URL, falling back to SQLite: " + e.getMessage());
             }
         }
 
-        // Local SQLite Fallback
+        // Local SQLite Fallback (no pooling needed for file-based DB)
+        DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("org.sqlite.JDBC");
         dataSource.setUrl("jdbc:sqlite:evacsense.sqlite");
         System.out.println("[DATABASE] Initializing local SQLite connection at evacsense.sqlite...");
