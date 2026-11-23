@@ -76,11 +76,11 @@ public class DatabaseConfig {
                 hikariConfig.setUsername(username);
                 hikariConfig.setPassword(password);
                 hikariConfig.setMaximumPoolSize(3);
-                hikariConfig.setMinimumIdle(1);
+                hikariConfig.setMinimumIdle(0);
                 hikariConfig.setConnectionTimeout(20000);
-                hikariConfig.setIdleTimeout(300000);
-                hikariConfig.setMaxLifetime(600000);
-                hikariConfig.setKeepaliveTime(60000);
+                hikariConfig.setIdleTimeout(120000);
+                hikariConfig.setMaxLifetime(300000);
+                hikariConfig.setKeepaliveTime(0);
                 hikariConfig.addDataSourceProperty("prepareThreshold", "0");
 
                 System.out.println("[DATABASE] Initializing HikariCP pool for Supabase PostgreSQL (max=3, PgBouncer-safe)...");
